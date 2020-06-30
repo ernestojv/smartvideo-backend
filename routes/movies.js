@@ -1,13 +1,16 @@
 const express = require('express');
 const MoviesService = require('../services/movies');
+const { movieIdSchema, createMovieSchema, updateMovieSchema } = require('../utils/schemas/movies');
+const validationHandler  = require('../utils/middleware/validationHandler');
+const joi = require('@hapi/joi');
 //GET
-function moviesApi(app){
+function moviesApi(app) {
     const router = express.Router();
     app.use("/api/movies", router);
 
     const moviesServie = new MoviesService();
 
-    router.get("/", async (request, response, next)=>{
+    router.get("/", async (request, response, next) => {
         const { tags } = request.query;
         try {
             const movies = await moviesServie.getMovies({ tags });
@@ -20,10 +23,10 @@ function moviesApi(app){
         }
     });
 
-//GET id
+    //GET id
 
-    router.get("/:movieId", async (request, response, next)=>{
-        const {movieId} = request.params;
+    router.get("/:movieId", validationHandler(joi.object({ movieId: movieIdSchema }), 'params'), async (request, response, next) => {
+        const { movieId } = request.params;
         try {
             const movies = await moviesServie.getMovie({ movieId });
             response.status(200).json({
@@ -35,10 +38,10 @@ function moviesApi(app){
         }
     });
 
-//POST
+    //POST
 
-    router.post("/", async (request, response, next)=>{
-        const {body: movie} = request;
+    router.post("/", validationHandler(createMovieSchema), async (request, response, next) => {
+        const { body: movie } = request;
         try {
             const createMovieId = await moviesServie.createMovie({ movie });
             response.status(201).json({
@@ -50,13 +53,13 @@ function moviesApi(app){
         }
     });
 
-//PUT
+    //PUT
 
-    router.put("/:movieId", async (request, response, next)=>{
-        const {movieId} = request.params;
-        const {body: movie} = request;
+    router.put("/:movieId", validationHandler(joi.object({ movieId: movieIdSchema }), 'params'), validationHandler(updateMovieSchema), async (request, response, next) => {
+        const { movieId } = request.params;
+        const { body: movie } = request;
         try {
-            const updatedMovieId = await moviesServie.updateMovie({movieId, movie});
+            const updatedMovieId = await moviesServie.updateMovie({ movieId, movie });
             response.status(200).json({
                 data: updatedMovieId,
                 message: 'movie updated'
@@ -66,13 +69,13 @@ function moviesApi(app){
         }
     });
 
-//DELETE
+    //DELETE
 
 
-    router.delete("/:movieId", async (request, response, next)=>{
-        const {movieId} = request.params;
+    router.delete("/:movieId", validationHandler(joi.object({ movieId: movieIdSchema }), 'params'), async (request, response, next) => {
+        const { movieId } = request.params;
         try {
-            const deletedMovieId = await moviesServie.deleteMovie({movieId});
+            const deletedMovieId = await moviesServie.deleteMovie({ movieId });
             response.status(200).json({
                 data: deletedMovieId,
                 message: 'movie deleted'
@@ -82,19 +85,19 @@ function moviesApi(app){
         }
     });
 
-//PATCH
-router.patch("/:movieId", async (request, response, next)=>{
-    const {movieId} = request.params;
-    const {body: movie} = request;
-    try {
-        const remplacedMovieId = await moviesServie.remplaceMovie({movieId, movie});
-        response.status(200).json({
-            data: remplacedMovieId,
-            message: 'movie remplaced'
-        })
-    } catch (error) {
-        next(error)
-    }
-});
+    //PATCH
+    router.patch("/:movieId", validationHandler(joi.object({ movieId: movieIdSchema }), 'params'), validationHandler(updateMovieSchema), async (request, response, next) => {
+        const { movieId } = request.params;
+        const { body: movie } = request;
+        try {
+            const remplacedMovieId = await moviesServie.remplaceMovie({ movieId, movie });
+            response.status(200).json({
+                data: remplacedMovieId,
+                message: 'movie remplaced'
+            })
+        } catch (error) {
+            next(error)
+        }
+    });
 }
 module.exports = moviesApi;
