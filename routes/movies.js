@@ -3,6 +3,8 @@ const MoviesService = require('../services/movies');
 const { movieIdSchema, createMovieSchema, updateMovieSchema } = require('../utils/schemas/movies');
 const validationHandler  = require('../utils/middleware/validationHandler');
 const joi = require('@hapi/joi');
+const cacheResponse = require('../utils/chacheResponse');
+const {FIVE_MINUTES_IN_SECONDS, SIXTY_MINUTES_IN_SECONDS} = require('../utils/time');
 //GET
 function moviesApi(app) {
     const router = express.Router();
@@ -11,6 +13,7 @@ function moviesApi(app) {
     const moviesServie = new MoviesService();
 
     router.get("/", async (request, response, next) => {
+        cacheResponse(response, FIVE_MINUTES_IN_SECONDS);
         const { tags } = request.query;
         try {
             const movies = await moviesServie.getMovies({ tags });
@@ -26,6 +29,7 @@ function moviesApi(app) {
     //GET id
 
     router.get("/:movieId", validationHandler(joi.object({ movieId: movieIdSchema }), 'params'), async (request, response, next) => {
+        cacheResponse(response, SIXTY_MINUTES_IN_SECONDS);
         const { movieId } = request.params;
         try {
             const movies = await moviesServie.getMovie({ movieId });
