@@ -10,7 +10,7 @@
     "cover": "nyc npm run test",
     "report": "nyc report --reporter=html && xdg-open coverage/index.html"
   },
-  "author": "",
+  "author": "ErnestoJV",
   "license": "ISC",
   "dependencies": {
     "@hapi/boom": "^9.1.0",
